@@ -41,15 +41,16 @@ jobs:
           echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_OUTPUT
 
           case ${{ matrix.job.os }} in
-          *windows*)
-            cp build/vamp-plugin/Release/loop-tempo-estimator-vamp.dll "${ARCHIVE_DIR}"
-          ;;
-          *macos*)
-            cp build/vamp-plugin/libloop-tempo-estimator-vamp.dylib "${ARCHIVE_DIR}"
-          ;;
-          *linux*)
-            cp build/vamp-plugin/libloop-tempo-estimator-vamp.so "${ARCHIVE_DIR}"
-          ;;
+            *windows*)
+              cp build/vamp-plugin/Release/loop-tempo-estimator-vamp.dll "${ARCHIVE_DIR}"
+              ;;
+            *macos*)
+              cp build/vamp-plugin/libloop-tempo-estimator-vamp.dylib "${ARCHIVE_DIR}"
+              ;;
+            *linux*)
+              cp build/vamp-plugin/libloop-tempo-estimator-vamp.so "${ARCHIVE_DIR}"
+              ;;
+          esac
 
           cp vamp-plugin/loop-tempo-estimator.{cat,n3} "${ARCHIVE_DIR}"
 
