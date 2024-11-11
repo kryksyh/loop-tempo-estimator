@@ -32,6 +32,7 @@ jobs:
 
       - name: Package
         id: package
+        shell: bash
         run: |
           PKG_BASENAME="${PROJECT_NAME}-${{ matrix.os }}"
           PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
@@ -39,6 +40,11 @@ jobs:
           ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}"
           mkdir -p "${ARCHIVE_DIR}"
           echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_OUTPUT
+
+          echo "PKG_BASENAME" ${PKG_BASENAME}
+          echo "PKG_NAME" ${PKG_NAME}
+          echo "PKG_STAGING" ${PKG_STAGING}
+          echo "ARCHIVE_DIR" ${ARCHIVE_DIR}
 
           case ${{ matrix.os }} in
             windows* ) cp build/vamp-plugin/Release/loop-tempo-estimator-vamp.dll "${ARCHIVE_DIR}" ;;
