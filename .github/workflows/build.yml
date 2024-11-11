@@ -1,5 +1,8 @@
 name: Build and Publish Vamp Plugin
 
+env:
+  CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
+
 on:
   push:
     branches: [master]
