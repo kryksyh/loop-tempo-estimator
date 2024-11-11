@@ -33,14 +33,14 @@ jobs:
       - name: Package
         id: package
         run: |
-          PKG_BASENAME="${PROJECT_NAME}-${{ matrix.job.os }}"
+          PKG_BASENAME="${PROJECT_NAME}-${{ matrix.os }}"
           PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
           PKG_NAME="${PKG_BASENAME}.zip"
           ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}"
           mkdir -p "${ARCHIVE_DIR}"
           echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_OUTPUT
 
-          case ${{ matrix.job.os }} in
+          case ${{ matrix.os }} in
             windows* ) cp build/vamp-plugin/Release/loop-tempo-estimator-vamp.dll "${ARCHIVE_DIR}" ;;
             macos*   ) cp build/vamp-plugin/libloop-tempo-estimator-vamp.dylib "${ARCHIVE_DIR}"    ;;
             ubuntu*  ) cp build/vamp-plugin/libloop-tempo-estimator-vamp.so "${ARCHIVE_DIR}"       ;;
