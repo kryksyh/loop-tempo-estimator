@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           GIT_TAG=$(git describe --tags --match "v[0-9]*" --abbrev=0 2>/dev/null || git rev-parse --short HEAD)
-          OS_NAME="${{ matrix.os//-latest/}}"
+          OS_NAME=$(echo "${{ matrix.os }}" | sed 's/-latest//')
 
           PKG_BASENAME="${PROJECT_NAME}-${GIT_TAG}-${OS_NAME}"
           PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
