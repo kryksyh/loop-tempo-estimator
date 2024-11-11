@@ -8,6 +8,9 @@ on:
 
 jobs:
   build:
+    env:
+      PROJECT_NAME: "loop-tempo-estimator-vamp"
+
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -24,39 +27,53 @@ jobs:
       - name: Build
         run: cmake --build build --config ${{ matrix.build_type }}
 
-      - name: Copy descriptions
+      - name: Package
+        id: package
         run: |
-          cp vamp-plugin/loop-tempo-estimator.cat build/vamp-plugin/
-          cp vamp-plugin/loop-tempo-estimator.n3 build/vamp-plugin/
+          PKG_BASENAME="${PROJECT_NAME}-${{ matrix.job.os }}"
+          PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
+          PKG_NAME="${PKG_BASENAME}.zip"
+          ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}"
+          mkdir -p "${ARCHIVE_DIR}"
+          echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_OUTPUT
 
-      - if: ${{ matrix.os == 'windows-latest' }}
+          case ${{ matrix.job.os }} in
+          *windows*)
+            cp build/vamp-plugin/Release/loop-tempo-estimator-vamp.dll "${ARCHIVE_DIR}"
+          ;;
+          *macos*)
+            cp build/vamp-plugin/libloop-tempo-estimator-vamp.dylib "${ARCHIVE_DIR}"
+          ;;
+          *linux*)
+            cp build/vamp-plugin/libloop-tempo-estimator-vamp.so "${ARCHIVE_DIR}"
+          ;;
+
+          cp vamp-plugin/loop-tempo-estimator.{cat,n3} "${ARCHIVE_DIR}"
+
+          pushd "${PGK_STAGING}/" > /dev/null
+          7z -y a "${PKG_NAME}" "${PKG_BASENAME}"/* | tail -2
+          popd > /dev/null
+
+          echo "PKG_PATH=${PKG_STAGING}/${PKG_NAME}" >> $GITHUB_OUTPUT
+
+      - name: "Artifact upload"
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ steps.package.outputs.PKG_NAME }}
+          path: ${{ steps.package.outputs.PKG_PATH }}
+
+      - name: Check for release
+        id: is-release
+        shell: bash
         run: |
-          cp vamp-plugin/loop-tempo-estimator.cat build/vamp-plugin/Release
-          cp vamp-plugin/loop-tempo-estimator.n3 build/vamp-plugin/Release
+          unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+          echo "IS_RELEASE=${IS_RELEASE}" >> $GITHUB_OUTPUT
 
-      - if: ${{ matrix.os == 'windows-latest' }}
-        uses: actions/upload-artifact@v4
+      - name: Publish archives
+        uses: softprops/action-gh-release@v2
+        if: steps.is-release.outputs.IS_RELEASE
         with:
-          name: loop-tempo-estimator-vamp-windows
-          path: |
-            build/vamp-plugin/Release/loop-tempo-estimator-vamp.dll
-            build/vamp-plugin/Release/loop-tempo-estimator.cat
-            build/vamp-plugin/Release/loop-tempo-estimator.n3
-
-      - if: ${{ matrix.os == 'macos-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: loop-tempo-estimator-vamp-macos
-          path: |
-            build/vamp-plugin/libloop-tempo-estimator-vamp.dylib
-            build/vamp-plugin/loop-tempo-estimator.cat
-            build/vamp-plugin/loop-tempo-estimator.n3
-
-      - if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: loop-tempo-estimator-vamp-linux
-          path: |
-            build/vamp-plugin/libloop-tempo-estimator-vamp.so
-            build/vamp-plugin/loop-tempo-estimator.cat
-            build/vamp-plugin/loop-tempo-estimator.n3
+          files: |
+            ${{ steps.package.outputs.PKG_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
