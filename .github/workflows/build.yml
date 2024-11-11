@@ -54,7 +54,7 @@ jobs:
 
           cp vamp-plugin/loop-tempo-estimator.{cat,n3} "${ARCHIVE_DIR}"
 
-          pushd "${PGK_STAGING}/" > /dev/null
+          pushd "${PKG_STAGING}/" > /dev/null
           7z -y a "${PKG_NAME}" "${PKG_BASENAME}"/* | tail -2
           popd > /dev/null
 
